@@ -14,12 +14,4 @@ fn test_saturating_u16() {
     assert_eq!(a + 5u16, 15u16);
     assert_eq!(a + &u16::MAX, SaturatingU16::from(u16::MAX));
 
-    let h = SaturatingU16::new(1u16);
-    let j = SaturatingU16::new(2u16);
-
-    assert_eq!(h, 1u16);
-    assert_eq!(j, 2u16);
-
-    let w = h + j;
-    assert_eq!(w, 4u16)
 }
