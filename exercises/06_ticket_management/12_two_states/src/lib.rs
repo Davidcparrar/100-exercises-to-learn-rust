@@ -5,16 +5,26 @@
 //
 // You also need to add a `get` method that takes as input a `TicketId`
 // and returns an `Option<&Ticket>`.
+use std::{collections::HashMap, ops::Add};
 
 use ticket_fields::{TicketDescription, TicketTitle};
 
 #[derive(Clone)]
 pub struct TicketStore {
-    tickets: Vec<Ticket>,
+    tickets: HashMap<TicketId, Ticket>,
+    ticket_max_id: TicketId,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TicketId(u64);
+
+impl Add<u64> for TicketId {
+    type Output = Self;
+
+    fn add(self, other: u64) -> Self {
+        Self(self.0 + other)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ticket {
@@ -37,15 +47,36 @@ pub enum Status {
     Done,
 }
 
+impl TicketId {
+    pub fn value(self) -> u64 {
+        self.0
+    }
+}
+
 impl TicketStore {
     pub fn new() -> Self {
         Self {
-            tickets: Vec::new(),
+            tickets: HashMap::new(),
+            ticket_max_id: TicketId(0),
         }
     }
 
-    pub fn add_ticket(&mut self, ticket: Ticket) {
-        self.tickets.push(ticket);
+    fn get(&self, id: TicketId) -> Option<&Ticket> {
+        self.tickets.get(&id)
+    }
+    pub fn add_ticket(&mut self, ticket_draft: TicketDraft) -> TicketId {
+        let next_id = self.ticket_max_id + 1;
+        self.tickets.insert(
+            next_id,
+            Ticket {
+                id: next_id,
+                title: ticket_draft.title,
+                description: ticket_draft.description,
+                status: Status::ToDo,
+            },
+        );
+        self.ticket_max_id = next_id;
+        next_id
     }
 }
 
